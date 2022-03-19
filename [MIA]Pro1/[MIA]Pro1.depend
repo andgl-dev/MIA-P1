@@ -1,0 +1,31 @@
+# depslib dependency file v1.0
+1647306674 source:/home/andgl/codigos/[MIA]Pro1/main.cpp
+	<iostream>
+	"codigo.h"
+
+1647306634 /home/andgl/codigos/[MIA]Pro1/include/codigo.h
+	<string>
+
+1647306634 source:/home/andgl/codigos/[MIA]Pro1/src/codigo.cpp
+	"codigo.h"
+	"analizador.h"
+	<stdio.h>
+	<iostream>
+	<fstream>
+	<stdlib.h>
+	<string>
+
+1647606425 /home/andgl/codigos/[MIA]Pro1/include/analizador.h
+	<vector>
+	<stdio.h>
+	<iostream>
+	<fstream>
+	<stdlib.h>
+	<string>
+
+1647521002 source:/home/andgl/codigos/[MIA]Pro1/src/analizador.cpp
+	"analizador.h"
+	<iomanip>
+	<ctime>
+	<cstring>
+
