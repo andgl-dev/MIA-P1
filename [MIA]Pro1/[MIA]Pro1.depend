@@ -29,3 +29,33 @@
 	<ctime>
 	<cstring>
 
+1647306674 source:/home/andgl/MIAP1/[MIA]Pro1/main.cpp
+	<iostream>
+	"codigo.h"
+
+1647306634 /home/andgl/MIAP1/[MIA]Pro1/include/codigo.h
+	<string>
+
+1647306634 source:/home/andgl/MIAP1/[MIA]Pro1/src/codigo.cpp
+	"codigo.h"
+	"analizador.h"
+	<stdio.h>
+	<iostream>
+	<fstream>
+	<stdlib.h>
+	<string>
+
+1647606425 /home/andgl/MIAP1/[MIA]Pro1/include/analizador.h
+	<vector>
+	<stdio.h>
+	<iostream>
+	<fstream>
+	<stdlib.h>
+	<string>
+
+1647669243 source:/home/andgl/MIAP1/[MIA]Pro1/src/analizador.cpp
+	"analizador.h"
+	<iomanip>
+	<ctime>
+	<cstring>
+

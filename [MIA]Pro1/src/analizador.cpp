@@ -3,6 +3,8 @@
 #include <ctime>
 #include <cstring>
 
+int inicio_global;
+
 analizador::analizador()
 {
     //ctor
@@ -59,24 +61,7 @@ void analizador::ejecutar(string comando, vector <string> tkns)
     }
     else if(iguales(comando,"REP"))
     {
-        cout<<"Osman Guacamaya   201504354"<<endl;
-        cout<<"Parametro  "<<"Categoria   "<<"Descripcion"<<endl;
-        cout<<"Rep        "<<"Obligatorio "<<tkns[0]<<endl;
-        struct tm *ts;
-        char fecha[80];
-        FILE *f;
-        f = fopen(tkns[0].substr(5).c_str(),"rb");
-        tmbr m;
-        fread(&m,sizeof(tmbr),1,f);
-        ts = localtime(&m.mbr_fecha_creacion);
-        strftime(fecha,sizeof(fecha),"%y-%m-%d %H:%M:%S",ts);
-        cout<<"----------- MBR ----------"<<endl;
-        cout<<"tamaño: "<<m.mbr_tamano<<endl;
-        cout<<"fecha:  "<<fecha<<endl;
-        cout<<"ID:     "<<m.mbr_dsk_signature<<endl;
-        fclose(f);
-
-//        HacerGrafica(tkns[0].substr(5).c_str());
+        HacerGrafica(tkns[0].substr(5).c_str());
     }
     else
     {
@@ -451,7 +436,7 @@ void analizador::Escribir_Particion(string path,tpart*p)
 {
     string pt =path;
     string tk = path;
-
+    inicio_global=0;
 
         FILE *f1;
         f1=fopen(pt.c_str(),"rb");
@@ -483,8 +468,13 @@ void analizador::Escribir_Particion(string path,tpart*p)
             if(part.part_status==1)
             {
                 int xD = strcmp(part.part_name, p->part_name);
-                cout<<xD<<endl;
-                Pausa();
+                if(xD==0)
+                {
+                    cout<<"El nombre de la particion ya existe"<<endl;
+                    cout<<part.part_name<<endl;
+                    Pausa();
+                    return;
+                }
 
                 tenlace enl;
                 enl.pa=cont;
@@ -507,19 +497,20 @@ void analizador::Escribir_Particion(string path,tpart*p)
                 }
             }
 
-            if(cont==4)
+            if(act==4)
             {
                 if(p->part_type=='L' && !extendida)
                 {
                     cout<<"Es necesario tener una particion extendida para crear una logica"<<endl;
+                    return;
                 }
                 else if(!(p->part_type=='L'))
                 {
                     cout<<"Ya cuentas con suficientes particiones"<<endl;
+                    return;
                 }
-                return;
             }
-            else if(extendida && (p->part_type=='E'))
+            else if(!extendida && (p->part_type=='E'))
             {
                 cout<<"Ya cuientas con una particion Extendida"<<endl;
                 return;
@@ -531,49 +522,36 @@ void analizador::Escribir_Particion(string path,tpart*p)
             inter.at(inter.size() - 1).adelante = m.mbr_tamano - inter.at(inter.size() - 1).fin;
         }
 
+        if(act==0)
+        {
+            p->part_start=sizeof(tmbr);
+            inicio_global=p->part_start;
+            m.mbr_partition_1=*p;
+        }
+        else if(act==1)
+        {
 
+            p->part_start=sizeof(tmbr)+m.mbr_partition_1.part_size;
+            inicio_global=p->part_start;
+            m.mbr_partition_2=*p;
+        }
+        else if(act==2)
+        {
+            p->part_start=sizeof(tmbr)+m.mbr_partition_1.part_size+m.mbr_partition_2.part_size;
+            inicio_global=p->part_start;
+            m.mbr_partition_3=*p;
+        }
+        else if(act==3)
+        {
+            p->part_start=sizeof(tmbr)+m.mbr_partition_1.part_size+m.mbr_partition_2.part_size+m.mbr_partition_3.part_size;
+            inicio_global=p->part_start;
+            m.mbr_partition_4=*p;
+        }
 
-        /*
-
-
-            //rewind(f1);
-            tmbr m;
-            fread(&m,sizeof(tmbr),1,f1);
-            int tamD = m.mbr_tamano;
-            int cont =sizeof(tmbr);
-            cout<<"tamaño MBR "<<cont<<endl;
-            int c;
-            fseek(f1,cont,SEEK_SET);
-            tpart pa=*p;
-            bool pasada=false;
-            while(cont<tamD)
-            {
-                if((cont+pa.part_size)>tamD)
-                {
-                    cout<<"No se pudo escribir la particion por falta de espacio"<<endl;
-                    fclose(f1);
-                    break;
-                }
-
-                tpart xd;
-                fread(&xd,sizeof(tpart),1,f1);
-                char* prueba ="part";
-                if(strstr(xd.part_name, prueba) == NULL)
-                {
-                    fseek(f1,cont,SEEK_SET);
-                    fwrite(&pa,sizeof(tpart),1,f1);
-                    fclose(f1);
-                    cout<<"Particion escrita con exito "<<endl;
-                    break;
-                }
-
-                cont+=sizeof(tpart);
-                cout<<"tamaño Cont "<<cont<<endl;
-                //fseek(f1,cont,SEEK_SET);
-            }
-
-
-*/
+        f1=fopen(pt.c_str(),"rb+");
+        fseek(f1,0,SEEK_SET);
+        fwrite(&m,sizeof(tmbr),1,f1);
+        fclose(f1);
 
 
 }
@@ -782,7 +760,7 @@ tpart analizador::DamePART(vector <string> tkns,int *bytes)
     return part;
 }
 
-/*
+
 void analizador::HacerGrafica(string path)
 {
     FILE *F;
@@ -806,24 +784,51 @@ void analizador::HacerGrafica(string path)
         cadena+="fecha:  ";
         cadena+=fecha;
         cadena+="\\n";
+        cadena+="Fit:  ";
+        cadena+=m.dsk_fit;
+        cadena+="\\n";
         cadena+="ID:     ";
         cadena+=to_string(m.mbr_dsk_signature);
 
         fseek(F,cont,SEEK_SET);
-        tpart xd;
-        fread(&xd,sizeof(tpart),1,F);
-        char* prueba ="part";
-        while(strstr(xd.part_name, prueba) != NULL)
+
+        vector <tpart> parti;
+        parti.push_back(m.mbr_partition_1);
+        parti.push_back(m.mbr_partition_2);
+        parti.push_back(m.mbr_partition_3);
+        parti.push_back(m.mbr_partition_4);
+
+        for(tpart part: parti)
         {
-            cadena+=" | ";
-            cadena+="Particion\\n";
-            cadena+="nombre: ";
-            cadena+=xd.part_name;
-            cadena+="\\n";
-            cadena+="tamaño:     ";
-            cadena+=to_string(xd.part_size);
-            fread(&xd,sizeof(tpart),1,F);
+            if(part.part_status==1)
+            {
+                cadena+=" | ";
+                cadena+="Particion\\n";
+                cadena+="nombre: ";
+                cadena+=part.part_name;
+                cadena+="\\n";
+                cadena+="tamaño:     ";
+                cadena+=to_string(part.part_size);
+                cadena+="\\n";
+                cadena+="Inicio:     ";
+                cadena+=to_string(part.part_start);
+                cadena+="\\n";
+                cadena+="Fit:     ";
+                cadena+=part.part_fit;
+                cadena+="\\n";
+                cadena+="Tipo:     ";
+                cadena+=part.part_type;
+                cadena+="\\n";
+                cadena+="Estado:     ";
+                cadena+=part.part_status;
+            }
+            else
+            {
+                cadena+=" | ";
+                cadena+="LIBRE\\n";
+            }
         }
+
         fclose(F);
         cadena+="\"];\n";
         cadena +="}";
@@ -838,7 +843,7 @@ void analizador::HacerGrafica(string path)
        // system("nohup display disco.png &" );
     }
 }
-*/
+
 
 //con este codigo podemos hacer pausa en el sistema y luego dar ENTER y conttinuar
 void analizador::Pausa()
